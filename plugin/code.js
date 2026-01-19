@@ -151,7 +151,7 @@ function createRectangle(data, parent) {
 }
 
 // Open the plugin UI (update this URL to match your current Cloudflare tunnel)
-penpot.ui.open('AI to Penpot', 'https://centers-elder-hypothetical-imaging.trycloudflare.com/plugin.html', {
+penpot.ui.open('AI to Penpot', 'https://s1xte3n.github.io/ai-to-penpot-js/plugin/plugin.html', {
   width: 400,
   height: 600
 });

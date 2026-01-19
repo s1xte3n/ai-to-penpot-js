@@ -1,157 +1,168 @@
-/**
- * AI to Penpot Plugin - Main Code
- * This runs in Penpot's context and has access to the penpot API
- */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI to Penpot</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🤖 AI to Penpot</h1>
+      <p>Transform JSON into real designs</p>
+    </header>
 
-console.log('🎨 AI to Penpot plugin loaded!');
+    <main>
+      <!-- JSON Input Section -->
+      <section class="input-section">
+        <label for="jsonInput">Paste your JSON here:</label>
+        <textarea
+          id="jsonInput"
+          placeholder='{
+  "frame": { "name": "Login Screen", "width": 375, "height": 667 },
+  "components": [
+    { "type": "text", "text": "Welcome", "x": 24, "y": 32 }
+  ]
+}'
+          rows="15"
+        ></textarea>
+      </section>
 
-// Listen for messages from the UI
-penpot.ui.onMessage((message) => {
-  console.log('Received message from UI:', message);
+      <!-- File Upload Alternative -->
+      <section class="upload-section">
+        <p>Or upload a JSON file:</p>
+        <input type="file" id="fileInput" accept=".json">
+      </section>
 
-  if (message.type === 'generate-design') {
-    generateDesign(message.data);
-  }
-});
+      <!-- Preview Section -->
+      <section class="preview-section">
+        <h3>Preview</h3>
+        <div id="preview" class="preview-box">
+          <p class="placeholder">JSON preview will appear here...</p>
+        </div>
+      </section>
 
-/**
- * Generate design from JSON data
- */
-function generateDesign(jsonData) {
-  try {
-    const { frame, components } = jsonData;
+      <!-- Actions -->
+      <section class="actions">
+        <button id="validateBtn" class="btn btn-secondary">
+          Validate JSON
+        </button>
+        <button id="generateBtn" class="btn btn-primary">
+          Generate Design
+        </button>
+      </section>
 
-    // Create frame
-    const penpotFrame = penpot.createFrame();
-    penpotFrame.name = frame.name || 'AI Generated Frame';
-    penpotFrame.resize(frame.width || 375, frame.height || 667);
+      <!-- Status Messages -->
+      <div id="status" class="status"></div>
+    </main>
+  </div>
 
-    // Position in center of viewport
-    const viewport = penpot.viewport;
-    penpotFrame.x = viewport.center.x - (penpotFrame.width / 2);
-    penpotFrame.y = viewport.center.y - (penpotFrame.height / 2);
+  <script>
+    // DOM Elements
+    const jsonInput = document.getElementById('jsonInput');
+    const fileInput = document.getElementById('fileInput');
+    const validateBtn = document.getElementById('validateBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const preview = document.getElementById('preview');
+    const status = document.getElementById('status');
 
-    // Create components
-    components.forEach(comp => {
-      createComponent(comp, penpotFrame);
+    let currentJSON = null;
+
+    // Event listeners
+    validateBtn.addEventListener('click', validateJSON);
+    generateBtn.addEventListener('click', generateDesign);
+    fileInput.addEventListener('change', handleFileUpload);
+    jsonInput.addEventListener('input', updatePreview);
+
+    // Handle messages from code.js
+    window.addEventListener('message', (event) => {
+      const message = event.data;
+
+      if (message.type === 'generation-complete') {
+        if (message.success) {
+          showStatus(`🎉 Success! Created ${message.count} components`, 'success');
+        } else {
+          showStatus(`❌ Error: ${message.error}`, 'error');
+        }
+      }
     });
 
-    // Notify UI of success
-    penpot.ui.sendMessage({
-      type: 'generation-complete',
-      success: true,
-      count: components.length
-    });
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-  } catch (error) {
-    console.error('Error generating design:', error);
-    penpot.ui.sendMessage({
-      type: 'generation-complete',
-      success: false,
-      error: error.message
-    });
-  }
-}
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        jsonInput.value = e.target.result;
+        updatePreview();
+      };
+      reader.readAsText(file);
+    }
 
-/**
- * Create component based on type
- */
-function createComponent(data, parent) {
-  switch (data.type) {
-    case 'text':
-      createText(data, parent);
-      break;
-    case 'button':
-      createButton(data, parent);
-      break;
-    case 'input':
-      createInput(data, parent);
-      break;
-    case 'rectangle':
-      createRectangle(data, parent);
-      break;
-    default:
-      console.warn(`Unknown component type: ${data.type}`);
-  }
-}
+    function updatePreview() {
+      try {
+        const data = JSON.parse(jsonInput.value);
+        currentJSON = data;
 
-/**
- * Create text element
- */
-function createText(data, parent) {
-  const text = penpot.createText(data.text || 'Text');
-  text.x = parent.x + (data.x || 0);
-  text.y = parent.y + (data.y || 0);
+        const componentCount = data.components?.length || 0;
+        const frameName = data.frame?.name || 'Unnamed';
 
-  if (data.fontSize) text.fontSize = data.fontSize;
-  if (data.fontWeight) text.fontWeight = data.fontWeight;
-  if (data.color) text.fills = [{ fillColor: data.color }];
+        preview.innerHTML = `
+          <strong>Frame:</strong> ${frameName}<br>
+          <strong>Components:</strong> ${componentCount}<br>
+          <strong>Valid:</strong> ✅ Ready to generate
+        `;
+      } catch (error) {
+        preview.innerHTML = `<p class="placeholder">Invalid JSON - check syntax</p>`;
+        currentJSON = null;
+      }
+    }
 
-  parent.appendChild(text);
-}
+    function validateJSON() {
+      try {
+        const data = JSON.parse(jsonInput.value);
 
-/**
- * Create button (rectangle + text)
- */
-function createButton(data, parent) {
-  const button = penpot.createRectangle();
-  button.x = parent.x + (data.x || 0);
-  button.y = parent.y + (data.y || 0);
-  button.resize(data.width || 200, data.height || 44);
-  button.fills = [{ fillColor: data.backgroundColor || '#667eea' }];
-  button.borderRadius = data.borderRadius || 6;
+        if (!data.frame) {
+          throw new Error('Missing "frame" property');
+        }
+        if (!data.components || !Array.isArray(data.components)) {
+          throw new Error('Missing or invalid "components" array');
+        }
 
-  parent.appendChild(button);
+        currentJSON = data;
+        showStatus('✅ JSON is valid!', 'success');
+        updatePreview();
+      } catch (error) {
+        showStatus(`❌ Validation error: ${error.message}`, 'error');
+      }
+    }
 
-  const buttonText = penpot.createText(data.text || 'Button');
-  buttonText.x = button.x + 10;
-  buttonText.y = button.y + 12;
-  buttonText.fills = [{ fillColor: data.textColor || '#ffffff' }];
+    function generateDesign() {
+      if (!currentJSON) {
+        showStatus('❌ Please enter valid JSON first', 'error');
+        return;
+      }
 
-  parent.appendChild(buttonText);
-}
+      showStatus('🔄 Generating design...', 'info');
 
-/**
- * Create input field
- */
-function createInput(data, parent) {
-  const input = penpot.createRectangle();
-  input.x = parent.x + (data.x || 0);
-  input.y = parent.y + (data.y || 0);
-  input.resize(data.width || 300, data.height || 44);
-  input.fills = [{ fillColor: '#ffffff' }];
-  input.strokes = [{ strokeColor: '#e0e0e0', strokeWidth: 1 }];
-  input.borderRadius = 4;
+      // Send message to code.js (which has access to penpot API)
+      window.parent.postMessage({
+        type: 'generate-design',
+        data: currentJSON
+      }, '*');
+    }
 
-  parent.appendChild(input);
+    function showStatus(message, type) {
+      status.textContent = message;
+      status.className = `status show ${type}`;
 
-  const label = penpot.createText(data.label || 'Input');
-  label.x = input.x + 12;
-  label.y = input.y + 12;
-  label.fills = [{ fillColor: '#999999' }];
-  label.fontSize = 14;
+      setTimeout(() => {
+        status.classList.remove('show');
+      }, 5000);
+    }
 
-  parent.appendChild(label);
-}
-
-/**
- * Create rectangle
- */
-function createRectangle(data, parent) {
-  const rect = penpot.createRectangle();
-  rect.x = parent.x + (data.x || 0);
-  rect.y = parent.y + (data.y || 0);
-  rect.resize(data.width || 100, data.height || 100);
-
-  if (data.fillColor) {
-    rect.fills = [{ fillColor: data.fillColor }];
-  }
-
-  parent.appendChild(rect);
-}
-
-// Open the plugin UI
-penpot.ui.open('AI to Penpot', 'plugin.html', {
-  width: 400,
-  height: 600
-});
+    console.log('✨ Plugin UI initialized!');
+  </script>
+</body>
+</html>
