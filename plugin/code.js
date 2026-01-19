@@ -151,7 +151,7 @@ function createRectangle(data, parent) {
 }
 
 // Open the plugin UI
-penpot.ui.open('AI to Penpot', 'https://s1xte3n.github.io/ai-to-penpot-js/plugin.html', {
+penpot.ui.open('AI to Penpot', 'https://s1xte3n.github.io/ai-to-penpot-js/plugin/plugin.html', {
   width: 400,
   height: 600
 });
