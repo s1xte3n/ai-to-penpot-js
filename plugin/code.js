@@ -21,15 +21,15 @@ function generateDesign(jsonData) {
   try {
     const { frame, components } = jsonData;
 
-    // Create board (Penpot renamed createFrame to createBoard)
-    const board = penpot.createBoard();
-    board.name = frame.name || 'AI Generated Frame';
-    board.resize(frame.width || 375, frame.height || 667);
+    // Create frame
+    const penpotFrame = penpot.createFrame();
+    penpotFrame.name = frame.name || 'AI Generated Frame';
+    penpotFrame.resize(frame.width || 375, frame.height || 667);
 
     // Position in center of viewport
     const viewport = penpot.viewport;
-    board.x = viewport.center.x - (board.width / 2);
-    board.y = viewport.center.y - (board.height / 2);
+    penpotFrame.x = viewport.center.x - (penpotFrame.width / 2);
+    penpotFrame.y = viewport.center.y - (penpotFrame.height / 2);
 
     // Create components
     components.forEach(comp => {
