@@ -8,7 +8,7 @@ console.log('🎨 AI to Penpot plugin loaded!');
 // Listen for messages from the UI
 penpot.ui.onMessage((message) => {
   console.log('Received message from UI:', message);
-
+  
   if (message.type === 'generate-design') {
     generateDesign(message.data);
   }
@@ -20,29 +20,29 @@ penpot.ui.onMessage((message) => {
 function generateDesign(jsonData) {
   try {
     const { frame, components } = jsonData;
-
+    
     // Create frame
     const penpotFrame = penpot.createFrame();
     penpotFrame.name = frame.name || 'AI Generated Frame';
     penpotFrame.resize(frame.width || 375, frame.height || 667);
-
+    
     // Position in center of viewport
     const viewport = penpot.viewport;
     penpotFrame.x = viewport.center.x - (penpotFrame.width / 2);
     penpotFrame.y = viewport.center.y - (penpotFrame.height / 2);
-
+    
     // Create components
     components.forEach(comp => {
       createComponent(comp, penpotFrame);
     });
-
+    
     // Notify UI of success
     penpot.ui.sendMessage({
       type: 'generation-complete',
       success: true,
       count: components.length
     });
-
+    
   } catch (error) {
     console.error('Error generating design:', error);
     penpot.ui.sendMessage({
@@ -82,11 +82,11 @@ function createText(data, parent) {
   const text = penpot.createText(data.text || 'Text');
   text.x = parent.x + (data.x || 0);
   text.y = parent.y + (data.y || 0);
-
+  
   if (data.fontSize) text.fontSize = data.fontSize;
   if (data.fontWeight) text.fontWeight = data.fontWeight;
   if (data.color) text.fills = [{ fillColor: data.color }];
-
+  
   parent.appendChild(text);
 }
 
@@ -100,14 +100,14 @@ function createButton(data, parent) {
   button.resize(data.width || 200, data.height || 44);
   button.fills = [{ fillColor: data.backgroundColor || '#667eea' }];
   button.borderRadius = data.borderRadius || 6;
-
+  
   parent.appendChild(button);
-
+  
   const buttonText = penpot.createText(data.text || 'Button');
   buttonText.x = button.x + 10;
   buttonText.y = button.y + 12;
   buttonText.fills = [{ fillColor: data.textColor || '#ffffff' }];
-
+  
   parent.appendChild(buttonText);
 }
 
@@ -122,15 +122,15 @@ function createInput(data, parent) {
   input.fills = [{ fillColor: '#ffffff' }];
   input.strokes = [{ strokeColor: '#e0e0e0', strokeWidth: 1 }];
   input.borderRadius = 4;
-
+  
   parent.appendChild(input);
-
+  
   const label = penpot.createText(data.label || 'Input');
   label.x = input.x + 12;
   label.y = input.y + 12;
   label.fills = [{ fillColor: '#999999' }];
   label.fontSize = 14;
-
+  
   parent.appendChild(label);
 }
 
@@ -142,11 +142,11 @@ function createRectangle(data, parent) {
   rect.x = parent.x + (data.x || 0);
   rect.y = parent.y + (data.y || 0);
   rect.resize(data.width || 100, data.height || 100);
-
+  
   if (data.fillColor) {
     rect.fills = [{ fillColor: data.fillColor }];
   }
-
+  
   parent.appendChild(rect);
 }
 
