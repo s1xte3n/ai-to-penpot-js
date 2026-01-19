@@ -3,7 +3,7 @@
  * This runs in Penpot's context and has access to the penpot API
  */
 
-console.log('🎨 AI to Penpot plugin loaded!');
+console.log('🎨 AI to Penpot plugin loaded! v2');
 
 // Listen for messages from the UI
 penpot.ui.onMessage((message) => {
@@ -21,19 +21,19 @@ function generateDesign(jsonData) {
   try {
     const { frame, components } = jsonData;
 
-    // Create frame
-    const penpotFrame = penpot.createFrame();
-    penpotFrame.name = frame.name || 'AI Generated Frame';
-    penpotFrame.resize(frame.width || 375, frame.height || 667);
+    // Create board (Penpot renamed createFrame to createBoard)
+    const board = penpot.createBoard();
+    board.name = frame.name || 'AI Generated Frame';
+    board.resize(frame.width || 375, frame.height || 667);
 
     // Position in center of viewport
     const viewport = penpot.viewport;
-    penpotFrame.x = viewport.center.x - (penpotFrame.width / 2);
-    penpotFrame.y = viewport.center.y - (penpotFrame.height / 2);
+    board.x = viewport.center.x - (board.width / 2);
+    board.y = viewport.center.y - (board.height / 2);
 
     // Create components
     components.forEach(comp => {
-      createComponent(comp, penpotFrame);
+      createComponent(comp, board);
     });
 
     // Notify UI of success
@@ -150,7 +150,7 @@ function createRectangle(data, parent) {
   parent.appendChild(rect);
 }
 
-// Open the plugin UI (update this URL to match your current Cloudflare tunnel)
+// Open the plugin UI
 penpot.ui.open('AI to Penpot', 'https://s1xte3n.github.io/ai-to-penpot-js/plugin/plugin.html', {
   width: 400,
   height: 600
