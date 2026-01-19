@@ -2,7 +2,7 @@
   "name": "AI to Penpot",
   "description": "Automatically generate Penpot designs from AI-generated JSON specifications",
   "version": "1.0.0",
-  "code": "plugin/code.js",
+  "code": "https://s1xte3n.github.io/ai-to-penpot-js/plugin/code.js",
   "permissions": [
     "content:read",
     "content:write"
