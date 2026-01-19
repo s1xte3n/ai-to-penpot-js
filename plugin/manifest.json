@@ -1,0 +1,10 @@
+{
+  "name": "AI to Penpot",
+  "description": "Automatically generate Penpot designs from AI-generated JSON specifications",
+  "version": "1.0.0",
+  "code": "code.js",
+  "permissions": [
+    "content:read",
+    "content:write"
+  ]
+}
